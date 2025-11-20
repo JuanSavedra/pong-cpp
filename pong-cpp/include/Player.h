@@ -1,6 +1,8 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include <glm/glm.hpp>
+
 struct GridPosition {
     int x;
     int y; 
@@ -32,7 +34,6 @@ public:
 private:
     glm::vec2 m_position;
     glm::vec2 m_size;
-    float m_speed;
 
     Direction currentDirection;
     Direction nextDirection;
