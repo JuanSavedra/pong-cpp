@@ -1,12 +1,27 @@
-﻿# CMakeList.txt: projeto de CMake para pong-cpp, incluir origem e definir
-# lógica específica a um projeto aqui.
-#
+﻿include(FetchContent)
+FetchContent_Declare(
+    glfw
+    GIT_REPOSITORY https://github.com/glfw/glfw.git
+    GIT_TAG        latest
+)
+FetchContent_MakeAvailable(glfw)
 
-# Adicione a origem ao executável deste projeto.
-add_executable (pong-cpp "src/main.cpp" )
+find_package(OpenGL REQUIRED)
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET pong-cpp PROPERTY CXX_STANDARD 20)
-endif()
+add_executable (pong-cpp 
+    "src/main.cpp"  
+    "src/Game.cpp" 
+    "include/glad/glad.h" 
+    "include/KHR/khrplatform.h" 
+    "src/glad.c"
+    "include/Game.h"
 
-# TODO: Adicione testes e instale destinos, se necessário.
+)
+
+target_include_directories(pong-cpp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(pong-cpp
+    PRIVATE
+    glfw
+    ${OpenGL_LIBRARIES}
+)
