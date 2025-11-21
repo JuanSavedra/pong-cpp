@@ -169,7 +169,19 @@ void Game::checkCollisions() {
                       ballPos.y + ballSize.y / 2 >= playerPos.y - playerSize.y / 2;
 
     if (collisionX && collisionY && ball.getVelocity().x < 0) {
+        // Calcular o ponto de impacto
+        float diff = ballPos.y - playerPos.y;
+        float normalized_diff = diff / (playerSize.y / 2);
+        
+        // Inverter a velocidade X
         ball.invertVelocityX();
+
+        // Definir a nova velocidade Y com base no ponto de impacto
+        glm::vec2 new_vel = ball.getVelocity();
+        new_vel.y = normalized_diff * 250.0f; // 250.0f é um fator de força
+        ball.setVelocity(new_vel);
+
+        // Aumentar a velocidade
         ball.increaseSpeed(1.1f);
     }
 }
