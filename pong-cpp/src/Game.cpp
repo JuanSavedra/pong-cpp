@@ -8,6 +8,7 @@
 Game::Game(unsigned int width, unsigned int height)
 	: screenWidth(width), screenHeight(height),
 	player(glm::vec2(50.0f, height / 2.0f)),
+	ball(glm::vec2(width / 2.0f, height / 2.0f), glm::vec2(200.0f, 200.0f)),
 	window(nullptr), shader(nullptr),
 	VAO(0), VBO(0),
 	deltaTime(0.0f) {
@@ -45,14 +46,14 @@ void Game::init() {
 	}
 
 	float vertices[] = {
-		// Tri�ngulo 1
-		-0.5f, -0.5f, 0.0f,  // V�rtice inferior esquerdo
-		 0.5f, -0.5f, 0.0f,  // V�rtice inferior direito
-		 0.5f,  0.5f, 0.0f,  // V�rtice superior direito
-		 // Tri�ngulo 2
-		  0.5f,  0.5f, 0.0f,  // V�rtice superior direito
-		 -0.5f,  0.5f, 0.0f,  // V�rtice superior esquerdo
-		 -0.5f, -0.5f, 0.0f   // V�rtice inferior esquerdo
+		// Triângulo 1
+		-0.5f, -0.5f, 0.0f,  // Vértice inferior esquerdo
+		 0.5f, -0.5f, 0.0f,  // Vértice inferior direito
+		 0.5f,  0.5f, 0.0f,  // Vértice superior direito
+		 // Triângulo 2
+		  0.5f,  0.5f, 0.0f,  // Vértice superior direito
+		 -0.5f,  0.5f, 0.0f,  // Vértice superior esquerdo
+		 -0.5f, -0.5f, 0.0f   // Vértice inferior esquerdo
 	};
 
 	glGenVertexArrays(1, &VAO);
@@ -110,6 +111,8 @@ void Game::processInput() {
 
 void Game::update(float dt) {
 	player.move(dt);
+	ball.move(dt);
+	checkCollisions();
 }
 
 void Game::render() {
@@ -120,6 +123,9 @@ void Game::render() {
 
 	glm::vec2 playerSize(20.0f, 100.0f);
 	drawSquare(player.getPosition(), playerSize, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+	glm::vec2 ballSize(20.0f, 20.0f);
+	drawSquare(ball.getPosition(), ballSize, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 }
 
 void Game::drawSquare(glm::vec2 position, glm::vec2 size, const glm::vec4& color) {
@@ -133,4 +139,37 @@ void Game::drawSquare(glm::vec2 position, glm::vec2 size, const glm::vec4& color
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
+}
+
+void Game::checkCollisions() {
+    glm::vec2 ballPos = ball.getPosition();
+    glm::vec2 playerPos = player.getPosition();
+    glm::vec2 ballSize(20.0f, 20.0f);
+    glm::vec2 playerSize(20.0f, 100.0f);
+
+    // Colisão com as bordas superior e inferior
+    if (ballPos.y + ballSize.y / 2 >= screenHeight || ballPos.y - ballSize.y / 2 <= 0) {
+        ball.invertVelocityY();
+    }
+
+    // Colisão com a borda direita
+    if (ballPos.x + ballSize.x / 2 >= screenWidth) {
+        ball.invertVelocityX();
+    }
+
+    // Colisão com a borda esquerda (derrota)
+    if (ballPos.x - ballSize.x / 2 <= 0) {
+        ball.reset(glm::vec2(screenWidth / 2.0f, screenHeight / 2.0f), glm::vec2(200.0f, 200.0f));
+    }
+
+    // Colisão com o jogador (AABB)
+    bool collisionX = ballPos.x - ballSize.x / 2 <= playerPos.x + playerSize.x / 2 &&
+                      ballPos.x + ballSize.x / 2 >= playerPos.x - playerSize.x / 2;
+    bool collisionY = ballPos.y - ballSize.y / 2 <= playerPos.y + playerSize.y / 2 &&
+                      ballPos.y + ballSize.y / 2 >= playerPos.y - playerSize.y / 2;
+
+    if (collisionX && collisionY && ball.getVelocity().x < 0) {
+        ball.invertVelocityX();
+        ball.increaseSpeed(1.1f);
+    }
 }

@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include <Player.h>
 #include <Shader.h>
+#include <Ball.h>
 
 class Game {
 public:
@@ -16,6 +17,7 @@ public:
 
 private:
 	Player player;
+	Ball ball;
 
 	const unsigned int screenWidth;
 	const unsigned int screenHeight;
@@ -30,6 +32,7 @@ private:
 	void update(float dt);
 	void render();
 	void drawSquare(glm::vec2 position, glm::vec2 size, const glm::vec4& color);
+	void checkCollisions();
 
 	static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 

@@ -23,7 +23,7 @@ add_executable (pong-cpp
     "include/KHR/khrplatform.h" 
     "src/glad.c"
     "include/Game.h"
- "include/Shader.h" "src/Shader.cpp" "include/Player.h" "src/Player.cpp")
+ "include/Shader.h" "src/Shader.cpp" "include/Player.h" "src/Player.cpp" "include/Ball.h" "src/Ball.cpp")
 
 target_include_directories(pong-cpp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(pong-cpp PRIVATE glm::glm-header-only)
