@@ -28,9 +28,9 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
         vertexCode = vShaderStream.str();
         fragmentCode = fShaderStream.str();
     }
-    catch (std::ifstream::failure e) {
-        std::cout << "ERRO::SHADER::ARQUIVO_NAO_LIDO\n"
-            << "Verifique o caminho: " << vertexPath << " ou " << fragmentPath << std::endl;
+    catch (std::ifstream::failure& e) {
+        std::cerr << "ERRO::SHADER::FALHA_AO_LER_ARQUIVO: " << e.what() << std::endl;
+        exit(1);
     }
 
     const char* vShaderCode = vertexCode.c_str();
@@ -70,8 +70,18 @@ void Shader::setInt(const std::string& name, int value) const {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
 }
 
+#include <glm/gtc/type_ptr.hpp>
+
 void Shader::setFloat(const std::string& name, float value) const {
     glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+}
+
+void Shader::setMat4(const std::string& name, const glm::mat4& mat) const {
+    glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
+}
+
+void Shader::setVec4(const std::string& name, const glm::vec4& value) const {
+    glUniform4fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
 }
 
 void Shader::checkCompileErrors(unsigned int shader, std::string type) {
@@ -82,14 +92,14 @@ void Shader::checkCompileErrors(unsigned int shader, std::string type) {
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
         if (!success) {
             glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-            std::cout << "ERRO::SHADER::" << type << "::FALHA_COMPILACAO\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+            std::cerr << "ERRO::SHADER::" << type << "::FALHA_COMPILACAO\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
         }
     }
     else {
         glGetProgramiv(shader, GL_LINK_STATUS, &success);
         if (!success) {
             glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-            std::cout << "ERRO::SHADER::PROGRAMA::FALHA_LINKAGEM\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+            std::cerr << "ERRO::SHADER::PROGRAMA::FALHA_LINKAGEM\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
         }
     }
 }

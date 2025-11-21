@@ -3,15 +3,6 @@
 
 #include <glm/glm.hpp>
 
-struct GridPosition {
-    int x;
-    int y; 
-
-    bool operator==(const GridPosition& other) const {
-        return x == other.x && y == other.y;
-    }
-};
-
 enum class Direction {
     UP,
     DOWN,
@@ -20,20 +11,16 @@ enum class Direction {
 
 class Player {
 public:
-    Player(int startX, int startY);
+    Player(glm::vec2 pos);
 
-    void move();
-
+    void move(float dt);
     void changeDirection(Direction newDirection);
-    bool isOutOfBounds(int gridHeight) const;
 
-    GridPosition getPlayerPosition() const;
-
+    glm::vec2 getPosition() const;
     Direction getCurrentDirection() const { return currentDirection; }
 
 private:
     glm::vec2 m_position;
-    glm::vec2 m_size;
 
     Direction currentDirection;
     Direction nextDirection;

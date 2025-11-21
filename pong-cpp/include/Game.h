@@ -3,6 +3,9 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <Player.h>
+#include <Shader.h>
 
 class Game {
 public:
@@ -12,20 +15,26 @@ public:
 	void run();
 
 private:
+	Player player;
+
 	const unsigned int screenWidth;
 	const unsigned int screenHeight;
-	const int gridWidth;
-	const int gridHeight;
 
 	GLFWwindow* window;
+	Shader* shader;
 
 	unsigned int VAO, VBO;
 
 	void init();
-	void update();
+	void processInput();
+	void update(float dt);
 	void render();
+	void drawSquare(glm::vec2 position, glm::vec2 size, const glm::vec4& color);
 
 	static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+
+	float deltaTime;
+
 };
 
 #endif
