@@ -13,7 +13,7 @@ class Player {
 public:
     Player(glm::vec2 pos);
 
-    void move(float dt);
+    void move(float dt, unsigned int screenHeight);
     void changeDirection(Direction newDirection);
 
     glm::vec2 getPosition() const;

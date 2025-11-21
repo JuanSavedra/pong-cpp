@@ -7,9 +7,10 @@ Player::Player(glm::vec2 pos) : m_position(pos) {
     nextDirection = Direction::IDLE;
 }
 
-void Player::move(float dt) {
+void Player::move(float dt, unsigned int screenHeight) {
     currentDirection = nextDirection;
     float speed = 200.0f; // Define a basic speed
+    float playerSizeY = 100.0f; // Tamanho da raquete (hardcoded por enquanto)
 
     switch (currentDirection) {
     case Direction::UP:
@@ -21,6 +22,14 @@ void Player::move(float dt) {
     case Direction::IDLE:
         // Do nothing
         break;
+    }
+
+    // Clamp vertical position
+    if (m_position.y + playerSizeY / 2 > screenHeight) {
+        m_position.y = screenHeight - playerSizeY / 2;
+    }
+    if (m_position.y - playerSizeY / 2 < 0) {
+        m_position.y = playerSizeY / 2;
     }
 }
 

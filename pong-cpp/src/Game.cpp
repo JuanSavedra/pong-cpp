@@ -110,7 +110,7 @@ void Game::processInput() {
 }
 
 void Game::update(float dt) {
-	player.move(dt);
+	player.move(dt, screenHeight);
 	ball.move(dt);
 	checkCollisions();
 }
