@@ -64,3 +64,6 @@ O projeto usa um par de shaders simples:
 *   **Loop do Jogo:** A lógica central segue um padrão de loop de jogo `init()`, `update()`, `render()` padrão.
 *   **Dependências:** As dependências C++ são gerenciadas pelo `FetchContent` do CMake.
 *   **Recursos:** Recursos do jogo como shaders estão localizados no diretório `pong-cpp/res` e são copiados automaticamente para o diretório de saída da build.
+
+## Imagens do projeto
+<img width="803" height="629" alt="image" src="https://github.com/user-attachments/assets/af61bb56-81d4-46c4-912c-0c944225fe31" />
