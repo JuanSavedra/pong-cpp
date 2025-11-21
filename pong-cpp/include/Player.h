@@ -1,7 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include <glm/glm.hpp>
+#include "GameObject.h"
 
 enum class Direction {
     UP,
@@ -9,19 +9,15 @@ enum class Direction {
     IDLE
 };
 
-class Player {
+class Player : public GameObject {
 public:
-    Player(glm::vec2 pos);
+    Player(glm::vec2 pos, glm::vec2 size);
 
-    void move(float dt, unsigned int screenHeight);
     void changeDirection(Direction newDirection);
-
-    glm::vec2 getPosition() const;
     Direction getCurrentDirection() const { return currentDirection; }
+    void move(float dt, unsigned int window_width, unsigned int window_height) override;
 
 private:
-    glm::vec2 m_position;
-
     Direction currentDirection;
     Direction nextDirection;
 };

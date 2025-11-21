@@ -7,6 +7,7 @@
 #include <Player.h>
 #include <Shader.h>
 #include <Ball.h>
+#include <SpriteRenderer.h>
 
 class Game {
 public:
@@ -23,15 +24,12 @@ private:
 	const unsigned int screenHeight;
 
 	GLFWwindow* window;
-	Shader* shader;
-
-	unsigned int VAO, VBO;
+	SpriteRenderer* Renderer;
 
 	void init();
 	void processInput();
 	void update(float dt);
 	void render();
-	void drawSquare(glm::vec2 position, glm::vec2 size, const glm::vec4& color);
 	void checkCollisions();
 
 	static void framebuffer_size_callback(GLFWwindow* window, int width, int height);

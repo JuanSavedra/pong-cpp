@@ -1,22 +1,20 @@
-#include <Game.h>
+#include "Game.h"
+#include "GameConstants.h"
+#include "ResourceManager.h"
 #include <iostream>
-#include <cstdlib>
-#include <ctime>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 Game::Game(unsigned int width, unsigned int height)
 	: screenWidth(width), screenHeight(height),
-	player(glm::vec2(50.0f, height / 2.0f)),
-	ball(glm::vec2(width / 2.0f, height / 2.0f), glm::vec2(200.0f, 200.0f)),
-	window(nullptr), shader(nullptr),
-	VAO(0), VBO(0),
+	player(glm::vec2(50.0f, height / 2.0f), PLAYER_SIZE),
+	ball(glm::vec2(width / 2.0f, height / 2.0f), BALL_SIZE, INITIAL_BALL_VELOCITY),
+	window(nullptr), Renderer(nullptr),
 	deltaTime(0.0f) {
 	init();
 }
 
 Game::~Game() {
-	delete shader;
+	delete Renderer;
+	ResourceManager::Clear();
 	glfwTerminate();
 }
 
@@ -45,35 +43,14 @@ void Game::init() {
 		return;
 	}
 
-	float vertices[] = {
-		// Triângulo 1
-		-0.5f, -0.5f, 0.0f,  // Vértice inferior esquerdo
-		 0.5f, -0.5f, 0.0f,  // Vértice inferior direito
-		 0.5f,  0.5f, 0.0f,  // Vértice superior direito
-		 // Triângulo 2
-		  0.5f,  0.5f, 0.0f,  // Vértice superior direito
-		 -0.5f,  0.5f, 0.0f,  // Vértice superior esquerdo
-		 -0.5f, -0.5f, 0.0f   // Vértice inferior esquerdo
-	};
-
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glBindVertexArray(VAO); 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
-	shader = new Shader("res/shaders/racket.vert", "res/shaders/racket.frag");
-	shader->use();
+	// Carregar shaders
+	ResourceManager::LoadShader("res/shaders/racket.vert", "res/shaders/racket.frag", "sprite");
 
 	glm::mat4 projection = glm::ortho(0.0f, (float)screenWidth, 0.0f, (float)screenHeight, -1.0f, 1.0f);
-	shader->setMat4("projection", projection);
+	ResourceManager::GetShader("sprite").use();
+	ResourceManager::GetShader("sprite").setMat4("projection", projection);
 
-	glm::mat4 view = glm::mat4(1.0f);
-	shader->setMat4("view", view);
+	Renderer = new SpriteRenderer(ResourceManager::GetShader("sprite"));
 }
 
 void Game::framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -88,7 +65,6 @@ void Game::run() {
 		lastFrame = currentFrame;
 
 		processInput();
-
 		update(deltaTime);
 		render();
 
@@ -110,8 +86,8 @@ void Game::processInput() {
 }
 
 void Game::update(float dt) {
-	player.move(dt, screenHeight);
-	ball.move(dt);
+	player.move(dt, screenWidth, screenHeight);
+	ball.move(dt, screenWidth, screenHeight);
 	checkCollisions();
 }
 
@@ -119,69 +95,46 @@ void Game::render() {
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	shader->use();
-
-	glm::vec2 playerSize(20.0f, 100.0f);
-	drawSquare(player.getPosition(), playerSize, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-
-	glm::vec2 ballSize(20.0f, 20.0f);
-	drawSquare(ball.getPosition(), ballSize, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-}
-
-void Game::drawSquare(glm::vec2 position, glm::vec2 size, const glm::vec4& color) {
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(position, 0.0f));
-	model = glm::scale(model, glm::vec3(size, 1.0f));
-
-	shader->setMat4("model", model);
-	shader->setVec4("objectColor", color);
-
-	glBindVertexArray(VAO);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glBindVertexArray(0);
+	Renderer->drawSprite(player.Position, player.Size, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	Renderer->drawSprite(ball.Position, ball.Size, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 }
 
 void Game::checkCollisions() {
-    glm::vec2 ballPos = ball.getPosition();
-    glm::vec2 playerPos = player.getPosition();
-    glm::vec2 ballSize(20.0f, 20.0f);
-    glm::vec2 playerSize(20.0f, 100.0f);
-
     // Colisão com as bordas superior e inferior
-    if (ballPos.y + ballSize.y / 2 >= screenHeight || ballPos.y - ballSize.y / 2 <= 0) {
+    if (ball.Position.y + ball.Size.y / 2 >= screenHeight || ball.Position.y - ball.Size.y / 2 <= 0) {
         ball.invertVelocityY();
     }
 
     // Colisão com a borda direita
-    if (ballPos.x + ballSize.x / 2 >= screenWidth) {
+    if (ball.Position.x + ball.Size.x / 2 >= screenWidth) {
         ball.invertVelocityX();
     }
 
     // Colisão com a borda esquerda (derrota)
-    if (ballPos.x - ballSize.x / 2 <= 0) {
-        ball.reset(glm::vec2(screenWidth / 2.0f, screenHeight / 2.0f), glm::vec2(200.0f, 200.0f));
+    if (ball.Position.x - ball.Size.x / 2 <= 0) {
+        ball.reset(glm::vec2(screenWidth / 2.0f, screenHeight / 2.0f), INITIAL_BALL_VELOCITY);
     }
 
     // Colisão com o jogador (AABB)
-    bool collisionX = ballPos.x - ballSize.x / 2 <= playerPos.x + playerSize.x / 2 &&
-                      ballPos.x + ballSize.x / 2 >= playerPos.x - playerSize.x / 2;
-    bool collisionY = ballPos.y - ballSize.y / 2 <= playerPos.y + playerSize.y / 2 &&
-                      ballPos.y + ballSize.y / 2 >= playerPos.y - playerSize.y / 2;
+    bool collisionX = ball.Position.x - ball.Size.x / 2 <= player.Position.x + player.Size.x / 2 &&
+                      ball.Position.x + ball.Size.x / 2 >= player.Position.x - player.Size.x / 2;
+    bool collisionY = ball.Position.y - ball.Size.y / 2 <= player.Position.y + player.Size.y / 2 &&
+                      ball.Position.y + ball.Size.y / 2 >= player.Position.y - player.Size.y / 2;
 
-    if (collisionX && collisionY && ball.getVelocity().x < 0) {
+    if (collisionX && collisionY && ball.Velocity.x < 0) {
         // Calcular o ponto de impacto
-        float diff = ballPos.y - playerPos.y;
-        float normalized_diff = diff / (playerSize.y / 2);
+        float diff = ball.Position.y - player.Position.y;
+        float normalized_diff = diff / (player.Size.y / 2);
         
         // Inverter a velocidade X
         ball.invertVelocityX();
 
         // Definir a nova velocidade Y com base no ponto de impacto
-        glm::vec2 new_vel = ball.getVelocity();
-        new_vel.y = normalized_diff * 250.0f; // 250.0f é um fator de força
-        ball.setVelocity(new_vel);
+        glm::vec2 new_vel = ball.Velocity;
+        new_vel.y = normalized_diff * BALL_BOUNCE_FORCE;
+        ball.Velocity = new_vel;
 
         // Aumentar a velocidade
-        ball.increaseSpeed(1.1f);
+        ball.increaseSpeed(BALL_SPEED_INCREASE_FACTOR);
     }
 }

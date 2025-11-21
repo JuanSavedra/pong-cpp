@@ -1,42 +1,36 @@
 #include "Player.h"
-#include <iostream>
-#include <glm/glm.hpp>
+#include <GameConstants.h>
 
-Player::Player(glm::vec2 pos) : m_position(pos) {
+Player::Player(glm::vec2 pos, glm::vec2 size) : GameObject(pos, size) {
     currentDirection = Direction::IDLE;
     nextDirection = Direction::IDLE;
-}
-
-void Player::move(float dt, unsigned int screenHeight) {
-    currentDirection = nextDirection;
-    float speed = 200.0f; // Define a basic speed
-    float playerSizeY = 100.0f; // Tamanho da raquete (hardcoded por enquanto)
-
-    switch (currentDirection) {
-    case Direction::UP:
-        m_position.y += speed * dt;
-        break;
-    case Direction::DOWN:
-        m_position.y -= speed * dt;
-        break;
-    case Direction::IDLE:
-        // Do nothing
-        break;
-    }
-
-    // Clamp vertical position
-    if (m_position.y + playerSizeY / 2 > screenHeight) {
-        m_position.y = screenHeight - playerSizeY / 2;
-    }
-    if (m_position.y - playerSizeY / 2 < 0) {
-        m_position.y = playerSizeY / 2;
-    }
 }
 
 void Player::changeDirection(Direction newDirection) {
     nextDirection = newDirection;
 }
 
-glm::vec2 Player::getPosition() const {
-    return m_position;
+void Player::move(float dt, unsigned int window_width, unsigned int window_height) {
+    currentDirection = nextDirection;
+
+    switch (currentDirection) {
+    case Direction::UP:
+        this->Velocity.y = PLAYER_SPEED;
+        break;
+    case Direction::DOWN:
+        this->Velocity.y = -PLAYER_SPEED;
+        break;
+    case Direction::IDLE:
+        this->Velocity.y = 0;
+        break;
+    }
+
+    this->Position.y += this->Velocity.y * dt;
+
+    if (this->Position.y + this->Size.y / 2 > window_height) {
+        this->Position.y = window_height - this->Size.y / 2;
+    }
+    if (this->Position.y - this->Size.y / 2 < 0) {
+        this->Position.y = this->Size.y / 2;
+    }
 }

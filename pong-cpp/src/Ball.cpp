@@ -1,38 +1,20 @@
 #include "Ball.h"
 
-Ball::Ball(glm::vec2 pos, glm::vec2 vel)
-    : m_position(pos), m_velocity(vel) {
-}
-
-void Ball::move(float dt) {
-    m_position += m_velocity * dt;
-}
-
-glm::vec2 Ball::getPosition() const {
-    return m_position;
-}
-
-glm::vec2 Ball::getVelocity() const {
-    return m_velocity;
-}
-
-void Ball::setVelocity(glm::vec2 vel) {
-    m_velocity = vel;
-}
+Ball::Ball(glm::vec2 pos, glm::vec2 size, glm::vec2 velocity) : GameObject(pos, size, velocity) { }
 
 void Ball::invertVelocityY() {
-    m_velocity.y = -m_velocity.y;
+    this->Velocity.y = -this->Velocity.y;
 }
 
 void Ball::invertVelocityX() {
-    m_velocity.x = -m_velocity.x;
+    this->Velocity.x = -this->Velocity.x;
 }
 
 void Ball::increaseSpeed(float factor) {
-    m_velocity *= factor;
+    this->Velocity *= factor;
 }
 
 void Ball::reset(glm::vec2 pos, glm::vec2 vel) {
-    m_position = pos;
-    m_velocity = vel;
+    this->Position = pos;
+    this->Velocity = vel;
 }
